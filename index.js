@@ -166,7 +166,7 @@ app.get('/generate', (req, res) => {
 });
 
 app.get("/docs", (req, res) => {
-    res.render("docs");
+    res.render("docs",res.render("docs",{name: config.name, url: config.url}););
 });
 
 app.get("/json/:code", function (req, res) {
