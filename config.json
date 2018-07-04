@@ -1,0 +1,13 @@
+{
+  "url":"https://shtn.ga",
+  "name":"Shtn.ga",
+  "motto":"URL Shortener",
+  "port":80,
+  "sessionSecret":"SECRET HERE",
+  "sql":{
+    "host":"DB HOST",
+    "user":"USERNAME",
+    "password":"PASSWORD",
+    "db":"DB NAME"
+  }
+}
