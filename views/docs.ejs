@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link type="text/css" rel="stylesheet" href="css/materialize.min.css"  media="screen,projection"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <%- include('meta'); -%>
+    <title>API Docs - <%= name %></title>
+    <Style>
+        body {
+            display: flex;
+            min-height: 100vh;
+            flex-direction: column;
+        }
+        .container {
+            flex: 1 0 auto;
+        }
+        .container {
+            display: flex;
+            align-items: center;
+            position: relative;
+        }
+        #nobg {
+            -webkit-box-shadow: none  !important;
+            -moz-box-shadow: none  !important;
+            box-shadow: none  !important;
+            background-color:rgba(0, 0, 0, 0) !important;
+        }
+    </Style>
+</head>
+<!--<body style="background: url('assets/bg.jpg'); background-repeat: no-repeat; background-size: cover;"> -->
+<body style="background-color: #232323;">
+<%- include('header'); -%>
+<div class="container">
+    <div class="row center white-text" style="width: 100%;">
+        <div class="col s12">
+            <h3><%= name %> API</h3>
+        </div>
+        <div class="col s12">
+            <h5>Creating shortened URL</h5>
+            <p>Make a request to <code><%= url -%>/api/generate/URL HERE</code></p>
+            <p>For example: <code><%= url -%>/api/generate/example.com</code></p>
+            <p>It will return the shortened url. Example: <code><%= url -%>/abcdef</code></p>
+        </div>
+    </div>
+</div>
+<%- include('footer'); -%>
+<script type="text/javascript" src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+<script type="text/javascript" src="js/materialize.min.js"></script>
+</body>
+</html>

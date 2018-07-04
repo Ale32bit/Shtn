@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link type="text/css" rel="stylesheet" href="/css/materialize.min.css"  media="screen,projection"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <%- include('meta'); -%>
+    <title>Error - <%= name %></title>
+    <Style>
+        body {
+            display: flex;
+            min-height: 100vh;
+            flex-direction: column;
+        }
+        .container {
+            flex: 1 0 auto;
+        }
+        .container {
+            display: flex;
+            align-items: center;
+            position: relative;
+        }
+        #nobg {
+            -webkit-box-shadow: none  !important;
+            -moz-box-shadow: none  !important;
+            box-shadow: none  !important;
+            background-color:rgba(0, 0, 0, 0) !important;
+        }
+    </Style>
+</head>
+<body style="background-color: #232323;">
+<%- include('header'); -%>
+<div class="container">
+    <div class="row" style="width: 100%;">
+        <div class="col s12 center white-text">
+            <h3>An error has occured.</h3>
+            <h5><%= error %></h5>
+        </div>
+    </div>
+</div>
+<%- include('footer'); -%>
+<script type="text/javascript" src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+<script type="text/javascript" src="/js/materialize.min.js"></script>
+</body>
+</html>

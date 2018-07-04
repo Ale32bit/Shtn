@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link type="text/css" rel="stylesheet" href="css/materialize.min.css" media="screen,projection"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <%- include('meta'); -%>
+    <title><%= name %> <%= motto %></title>
+    <Style>
+        body {
+            display: flex;
+            min-height: 100vh;
+            flex-direction: column;
+        }
+
+        .container {
+            flex: 1 0 auto;
+        }
+
+        .container {
+            display: flex;
+            align-items: center;
+            position: relative;
+        }
+
+        #nobg {
+            -webkit-box-shadow: none !important;
+            -moz-box-shadow: none !important;
+            box-shadow: none !important;
+            background-color: rgba(0, 0, 0, 0) !important;
+        }
+    </Style>
+</head>
+<!--<body style="background: url('assets/bg.jpg'); background-repeat: no-repeat; background-size: cover;"> -->
+<body style="background-color: #232323;">
+<%- include('header'); -%>
+<div class="container">
+    <div class="row" style="width: 100%;">
+        <div class="col s12 m6 center white-text">
+            <h3>Welcome to <%= name %></h3>
+            <h5><%= motto %></h5>
+        </div>
+        <form class="col s12 m6 center white-text" action="generate" onsubmit="return validate()">
+            <div class="row" style="margin-bottom: 0;">
+                <div class="input-field col s12">
+                    <input id="url" name="url" class="validate" style="margin-bottom: 5px;" oninput="updateInput()">
+                    <label id="urlTitle" for="url" class="active">URL</label>
+                </div>
+            </div>
+            <div class="row">
+                <div class="input-field col s12">
+                    <div class="row">
+                        <button class="btn waves-effect waves-light blue" type="submit">Shorten it!
+                            <i class="material-icons right">send</i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+<%- include('footer'); -%>
+<script>
+    $(document).ready(function () {
+        Materialize.updateTextFields();
+    });
+
+    const fix = function (s) {
+        if (!s.match(/^[a-zA-Z]+:\/\//)) {
+            s = 'http://' + s;
+        }
+        return s;
+    };
+
+    // why do IDEs always scream
+    /**
+     * @return {boolean}
+     */
+    function isURL(str) {
+        let pattern = new RegExp('^(https?:\\/\\/)?' + // protocol
+            '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.?)+[a-z]{2,}|' + // domain name
+            '((\\d{1,3}\\.){3}\\d{1,3}))' + // OR ip (v4) address
+            '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*' + // port and path
+            '(\\?[;&a-z\\d%_.~+=-]*)?' + // query string
+            '(\\#[-a-z\\d_]*)?$', 'i'); // fragment locator
+        return pattern.test(str);
+    }
+
+    function validate() {
+        let url = document.getElementById("url").value;
+        url = fix(url);
+        console.log(url)
+
+        if (isURL(url)) {
+            return true;
+        } else {
+            let title = document.getElementById("urlTitle")
+            title.innerText = "Invalid URL";
+            title.classList.add("red-text");
+
+        }
+        return false;
+    }
+
+    function updateInput() {
+        let title = document.getElementById("urlTitle")
+        title.innerText = "URL";
+        title.classList.remove("red-text");
+    }
+
+</script>
+</body>
+</html>
