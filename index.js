@@ -166,7 +166,7 @@ app.get('/generate', (req, res) => {
 });
 
 app.get("/docs", (req, res) => {
-    res.render("docs",res.render("docs",{name: config.name, url: config.url}););
+    res.render("docs",{name: config.name, url: config.url});
 });
 
 app.get("/json/:code", function (req, res) {
@@ -181,7 +181,7 @@ app.get("/json/:code", function (req, res) {
             let data = {
                 code: req.params.code,
                 url: rows[0].redirect,
-                clicks: rows[0].clicks,
+                clicks: Number(rows[0].clicks),
             };
             res.send(JSON.stringify(data));
         } else {
@@ -223,7 +223,7 @@ viewRouter.get("/:id", function (req, res) { // view
                 });
         })
         .catch(e => {
-            res.status(404).render("error", {error: "Code not found"});
+            res.status(404).render("error", {error: "Code not found", name: config.name, url: config.url});
         });
 });
 
@@ -231,10 +231,10 @@ apiRouter.get("/", function (req, res) {
     res.render("docs", {name: config.name, url: config.url});
 });
 
-apiRouter.get("/generate/:url", function (req, res) { // api
-    if (req.params.url) {
-        if (isURL(req.params.url)) {
-            create(req.params.url).then(c => {
+apiRouter.get("/generate", function (req, res) { // api
+    if (req.query.url) {
+        if (isURL(req.query.url)) {
+            create(req.query.url).then(c => {
                 res.send(c);
             })
         } else {
@@ -245,13 +245,9 @@ apiRouter.get("/generate/:url", function (req, res) { // api
     }
 });
 
-apiRouter.get("/generate", function (req, res) {
-    res.send("Please provide an URL");
-});
-
-apiRouter.get("/resolve/:code", function (req, res) {
-    if (req.params.code) {
-        getURL(req.params.code)
+apiRouter.get("/resolve", function (req, res) {
+    if (req.query.code) {
+        getURL(req.query.code)
             .then(url => {
                 res.send(url).end();
             })
@@ -263,15 +259,11 @@ apiRouter.get("/resolve/:code", function (req, res) {
     }
 });
 
-apiRouter.get("/resolve", function (req, res) {
-    res.send("Please provide a code");
-});
-
-apiRouter.get("/clicks/:code", function (req, res) {
-    if (req.params.code) {
-        getURL(req.params.code)
+apiRouter.get("/clicks", function (req, res) {
+    if (req.query.code) {
+        getURL(req.query.code)
             .then(() => {
-                getClicks(req.params.code)
+                getClicks(req.query.code)
                     .then(clicks => {
                         res.send(clicks);
                     })
@@ -284,12 +276,8 @@ apiRouter.get("/clicks/:code", function (req, res) {
     }
 });
 
-apiRouter.get("/clicks", function (req, res) {
-    res.send("Please provide a code");
-});
-
 app.use(function (req, res) {
-    res.status(404).render("error", {error: "Error 404 - File not found"});
+    res.status(404).render("error", {error: "Error 404 - File not found", name: config.name, url: config.url});
 });
 
 app.listen(config.port, () => console.log("Listening to " + config.port));

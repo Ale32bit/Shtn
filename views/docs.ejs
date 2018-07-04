@@ -37,10 +37,42 @@
             <h3><%= name %> API</h3>
         </div>
         <div class="col s12">
-            <h5>Creating shortened URL</h5>
-            <p>Make a request to <code><%= url %>/api/generate/URL HERE</code></p>
-            <p>For example: <code><%= url %>/api/generate/example.com</code></p>
-            <p>It will return the shortened url. Example: <code><%= url %>/abcdef</code></p>
+            <h4>GET requests</h4>
+        </div>
+        <div class="rows">
+            <div class="col s4">
+                <h5>Generating shortened URL</h5>
+                <p>Make a GET request to <code><%= url %>/api/generate?url=URL HERE</code></p>
+                <p>For example: <code><%= url %>/api/generate?url=example.com</code></p>
+                <p>It will return the shortened URL. Example: <code><%= url %>/abcdef</code></p>
+            </div>
+            <div class="col s4">
+                <h5>Resolving a code</h5>
+                <p>Make a get request to <code><%= url %>/api/resolve?code=CODE HERE</code></p>
+                <p>For example: <code><%= url %>/api/resolve?code=abcdef</code></p>
+                <p>It will return the resolved URL. Example: <code>http://example.com/abcdef</code></p>
+            </div>
+            <div class="col s4">
+                <h5>Getting clicks</h5>
+                <p>Make a get request to <code><%= url %>/api/clicks?code=CODE HERE</code></p>
+                <p>For example: <code><%= url %>/api/clicks?code=abcdef</code></p>
+                <p>It will return all clicks as a number.</p>
+            </div>
+        </div>
+        <div class="divider"></div>
+        <div class="row">
+            <div class="col s12">
+                <h4>JSON</h4>
+                <p>You can fetch codes data in JSON:<br>Make a get request to <code><%= url %>/json/CODE HERE</code></p>
+                <p><code><%= url %>/json/abcdef</code> should get you: <br></p>
+                <pre class="left-align"><code>
+                        {
+                            "code": "abcdef",
+                            "url": "http://example.com",
+                            "clicks": 30
+                        }
+                    </code></pre>
+            </div>
         </div>
     </div>
 </div>
