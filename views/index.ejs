@@ -3,6 +3,7 @@
 <head>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link type="text/css" rel="stylesheet" href="css/materialize.min.css" media="screen,projection"/>
+    <link type="text/css" rel="stylesheet" href="css/style.css" media="screen,projection"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <%- include('meta'); -%>
     <title><%= name %> <%= motto %></title>
@@ -97,7 +98,8 @@
             let title = document.getElementById("urlTitle")
             title.innerText = "Invalid URL";
             title.classList.add("red-text");
-
+            title.classList.add("shaketext");
+            setTimeout(()=>{title.classList.remove("shaketext")},850)
         }
         return false;
     }
@@ -106,6 +108,7 @@
         let title = document.getElementById("urlTitle")
         title.innerText = "URL";
         title.classList.remove("red-text");
+        title.classList.remove("shaketext");
     }
 
 </script>
