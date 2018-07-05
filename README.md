@@ -4,7 +4,7 @@ Node.js fast URL  Shortener
 
 ## Config
 
-```json
+```javascript
 {
   "url":"https://shtn.ga", // URL
   "name":"Shtn.ga", // Title
