@@ -1,0 +1,23 @@
+<% if(!locals.notfixed)  { %>
+<div class="navbar-fixed">
+    <% } %>
+    <nav class="transparent z-depth-0">
+        <div class="nav-wrapper">
+            <% if(!locals.nologo) { %>
+                <a href="/" class="brand-logo teal-text text-lighten-1 center"><%= name %></a>
+            <% } %>
+            <a href="#" data-target="mobile-menu" class="sidenav-trigger"><i class="material-icons">menu</i></a>
+            <ul class="right hide-on-med-and-down">
+                <li><a href="/docs" class="waves-effect waves-light btn teal white-text z-depth-0">API Docs</a></li>
+                <li><a href="/report" class="waves-effect waves-light btn red white-text z-depth-0">Report</a></li>
+            </ul>
+        </div>
+    </nav>
+    <% if(!locals.notfixed)  { %>
+</div>
+<% } %>
+
+<ul class="sidenav grey darken-4 teal-text" id="mobile-menu">
+    <li><a href="/docs" class="waves-effect waves-light btn teal z-depth-0">API Docs</a></li>
+    <li><a href="/report" class="waves-effect waves-light btn red z-depth-0">Report</a></li>
+</ul>

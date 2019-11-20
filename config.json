@@ -1,13 +1,10 @@
 {
-  "url":"https://shtn.ga",
-  "name":"Shtn.ga",
-  "motto":"URL Shortener",
-  "port":80,
-  "sessionSecret":"SECRET HERE",
-  "sql":{
-    "host":"DB HOST",
-    "user":"USERNAME",
-    "password":"PASSWORD",
-    "db":"DB NAME"
-  }
+  "port": 80,
+  "name": "Shtn",
+  "motto": "Fast URL Shortener",
+  "code_length": 5,
+  "recaptcha_key": "public",
+  "recaptcha_secret": "secret",
+  "discord_webhook": false,
+  "sessionSecret": "random"
 }

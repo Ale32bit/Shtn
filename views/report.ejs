@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<%- include("partials/header"); %>
+
+<body>
+<%- include("partials/navbar"); %>
+
+<div class="valign-wrapper" style="width:100%;height:75vh;position: absolute;">
+    <div class="valign" style="width:100%;">
+        <div class="container">
+            <div class="row">
+                <div class="col s12 m6 offset-m3">
+
+                    <h1 class="teal-text text-lighten-1 center">Report link</h1>
+
+                    <form id="form_url" action="/report" method="post">
+                        <div class="row">
+                            <div class="input-field col s12 m8">
+                                <input id="input_code" type="text" class="validate white-text">
+                                <label id="label_input_code" for="input_code">Code</label>
+                            </div>
+                            <div class="input-field col s12 m8">
+                                <textarea id="text_reason" class="materialize-textarea white-text"></textarea>
+                                <label for="text_reason">Reason</label>
+                            </div>
+                            <div class="input-field col s12 m4 center-on-small-only">
+                                <button id="btn_submit"
+                                        class="btn waves-effect waves-light teal white-text z-depth-0"
+                                        type="submit">Report
+                                    <i class="material-icons right white-text">send</i>
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://www.google.com/recaptcha/api.js?render=<%= recaptcha_key %>"></script>
+<script>
+    function post(path, params, method = 'post') {
+
+        // The rest of this code assumes you are not using a library.
+        // It can be made less wordy if you use one.
+        const form = document.createElement('form');
+        form.method = method;
+        form.action = path;
+
+        for (const key in params) {
+            if (params.hasOwnProperty(key)) {
+                const hiddenField = document.createElement('input');
+                hiddenField.type = 'hidden';
+                hiddenField.name = key;
+                hiddenField.value = params[key];
+
+                form.appendChild(hiddenField);
+            }
+        }
+
+        document.body.appendChild(form);
+        form.submit();
+    }
+</script>
+<script>
+    let urlField = document.getElementById("input_code");
+    // Automatically focus on the text input on load
+    urlField.focus();
+
+    let form = document.getElementById("form_url");
+
+    form.addEventListener("submit", function (event) {
+        event.preventDefault();
+        console.log("ok");
+        grecaptcha.execute('<%= recaptcha_key %>', {action: 'report'}).then(token => {
+            console.log(token);
+            post("/report", {
+                token: token,
+                code: urlField.value,
+                reason: document.getElementById("text_reason").value,
+            })
+        })
+
+    });
+
+</script>
+
+<%- include("partials/footer"); %>
+
+</body>
+</html>

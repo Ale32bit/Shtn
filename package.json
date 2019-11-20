@@ -1,21 +1,24 @@
 {
   "name": "shtn",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Fast URL Shortener",
   "main": "index.js",
   "dependencies": {
-    "ejs": "^2.6.1",
-    "express": "^4.16.3",
-    "express-session": "^1.15.6",
-    "helmet": "^3.12.1",
-    "mariasql": "^0.2.6"
+    "ejs": "^2.7.2",
+    "express": "^4.17.1",
+    "express-rate-limit": "^5.0.0",
+    "express-session": "^1.17.0",
+    "helmet": "^3.21.2",
+    "morgan": "^1.9.1",
+    "node-fetch": "^2.6.0",
+    "sqlite3": "^4.1.0"
   },
   "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Alessandro \"Ale32bit\"",
-  "license": "GPL-3.0",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Ale32bit/Shtn.git"
@@ -29,5 +32,5 @@
   "bugs": {
     "url": "https://github.com/Ale32bit/Shtn/issues"
   },
-  "homepage": "https://shtn.ga"
+  "homepage": "https://shtn.pw"
 }

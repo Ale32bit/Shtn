@@ -1,116 +1,90 @@
 <!DOCTYPE html>
-<html>
-<head>
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <link type="text/css" rel="stylesheet" href="css/materialize.min.css" media="screen,projection"/>
-    <link type="text/css" rel="stylesheet" href="css/style.css" media="screen,projection"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <%- include('meta'); -%>
-    <title><%= name %> <%= motto %></title>
-    <Style>
-        body {
-            display: flex;
-            min-height: 100vh;
-            flex-direction: column;
-        }
+<html lang="en">
 
-        .container {
-            flex: 1 0 auto;
-        }
+<%- include("partials/header"); %>
 
-        .container {
-            display: flex;
-            align-items: center;
-            position: relative;
-        }
+<body>
+<%- include("partials/navbar"); %>
 
-        #nobg {
-            -webkit-box-shadow: none !important;
-            -moz-box-shadow: none !important;
-            box-shadow: none !important;
-            background-color: rgba(0, 0, 0, 0) !important;
-        }
-    </Style>
-</head>
-<!--<body style="background: url('assets/bg.jpg'); background-repeat: no-repeat; background-size: cover;"> -->
-<body style="background-color: #232323;">
-<%- include('header'); -%>
-<div class="container">
-    <div class="row" style="width: 100%;">
-        <div class="col s12 m6 center white-text">
-            <h3>Welcome to <%= name %></h3>
-            <h5><%= motto %></h5>
-        </div>
-        <form class="col s12 m6 center white-text" action="generate" onsubmit="return validate()">
-            <div class="row" style="margin-bottom: 0;">
-                <div class="input-field col s12">
-                    <input id="url" name="url" class="validate" style="margin-bottom: 5px;" oninput="updateInput()">
-                    <label id="urlTitle" for="url" class="active">URL</label>
-                </div>
-            </div>
+<div class="valign-wrapper" style="width:100%;height:75vh;position: absolute;">
+    <div class="valign" style="width:100%;">
+        <div class="container">
             <div class="row">
-                <div class="input-field col s12">
-                    <div class="row">
-                        <button class="btn waves-effect waves-light blue" type="submit">Shorten it!
-                            <i class="material-icons right">send</i>
-                        </button>
-                    </div>
+                <div class="col s12 m6 offset-m3">
+
+                    <h1 class="teal-text text-lighten-1 center"><%= name %></h1>
+                    <h5 class="white-text text-lighten-1 center"><%= motto %></h5>
+
+                    <form id="form_url">
+                        <div class="row">
+                            <div class="input-field col s12 m8">
+                                <i class="material-icons prefix teal-text text-lighten-1">link</i>
+                                <input id="input_url" type="text" class="validate white-text">
+                                <label id="label_input_url" for="input_url">Long URL https://...</label>
+                            </div>
+                            <div class="input-field col s12 m4 center-on-small-only">
+                                <button id="btn_submit"
+                                        class="btn waves-effect waves-light teal white-text z-depth-0 disabled"
+                                        type="submit">Shorten it!
+                                    <i class="material-icons right white-text">send</i>
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+
                 </div>
             </div>
-        </form>
+        </div>
     </div>
 </div>
-<%- include('footer'); -%>
+<script src="https://www.google.com/recaptcha/api.js?render=<%= recaptcha_key %>"></script>
 <script>
-    $(document).ready(function () {
-        Materialize.updateTextFields();
+    let inputLabel = document.getElementById("label_input_url");
+    let originalLabel = inputLabel.innerText;
+
+    let urlField = document.getElementById("input_url");
+    // Automatically focus on the text input on load
+    urlField.focus();
+
+    let form = document.getElementById("form_url");
+
+    form.addEventListener("submit", function (event) {
+        event.preventDefault();
+        console.log(event);
+        let url;
+        try {
+            url = new URL(urlField.value);
+            grecaptcha.execute('<%= recaptcha_key %>', {action: 'submit'}).then(token => {
+                let redirectURL = new URL(location.origin);
+                redirectURL.pathname = "/generate";
+                redirectURL.searchParams.set("url", url);
+                redirectURL.searchParams.set("token", token);
+                location.href = redirectURL.href;
+            })
+
+        } catch (e) {
+            console.error("DEBUG: Invalid URL", e)
+            inputLabel.innerText = "Invalid URL!";
+            inputLabel.classList.add("red-text");
+            setTimeout(() => {
+                inputLabel.innerText = originalLabel;
+                inputLabel.classList.remove("red-text");
+            }, 1500) // 1.5 Seconds
+        }
     });
 
-    const fix = function (s) {
-        if (!s.match(/^[a-zA-Z]+:\/\//)) {
-            s = 'http://' + s;
+    urlField.addEventListener("change", function () {
+        try {
+            new URL(urlField.value);
+            document.getElementById("btn_submit").classList.remove("disabled");
+        } catch (e) {
+            document.getElementById("btn_submit").classList.add("disabled");
         }
-        return s;
-    };
-
-    // why do IDEs always scream
-    /**
-     * @return {boolean}
-     */
-    function isURL(str) {
-        let pattern = new RegExp('^(https?:\\/\\/)?' + // protocol
-            '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.?)+[a-z]{2,}|' + // domain name
-            '((\\d{1,3}\\.){3}\\d{1,3}))' + // OR ip (v4) address
-            '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*' + // port and path
-            '(\\?[;&a-z\\d%_.~+=-]*)?' + // query string
-            '(\\#[-a-z\\d_]*)?$', 'i'); // fragment locator
-        return pattern.test(str);
-    }
-
-    function validate() {
-        let url = document.getElementById("url").value;
-        url = fix(url);
-        console.log(url)
-
-        if (isURL(url)) {
-            return true;
-        } else {
-            let title = document.getElementById("urlTitle")
-            title.innerText = "Invalid URL";
-            title.classList.add("red-text");
-            title.classList.add("shaketext");
-            setTimeout(()=>{title.classList.remove("shaketext")},850)
-        }
-        return false;
-    }
-
-    function updateInput() {
-        let title = document.getElementById("urlTitle")
-        title.innerText = "URL";
-        title.classList.remove("red-text");
-        title.classList.remove("shaketext");
-    }
+    });
 
 </script>
+
+<%- include("partials/footer"); %>
+
 </body>
 </html>

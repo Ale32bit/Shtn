@@ -1,283 +1,100 @@
 const express = require("express");
+const RateLimit = require("express-rate-limit");
+const sqlite3 = require("sqlite3").verbose();
 const app = express();
-const Maria = require("mariasql");
+
+console.log("Shtn Server");
+
 const config = require("./config.json");
+app.config = config;
 
-const query = function (query, placeholders, options) {
-    return new Promise((resolve, reject) => {
-        let c = new Maria(config.sql);
+const db = new sqlite3.Database("database.sqlite");
+app.db = db;
 
-        c.query(query, placeholders, options = null, function (err, rows) {
-            if (err) return reject(err);
-            resolve(rows);
-        });
+console.log("Checking tables...");
 
-        c.end();
-    })
-};
+db.run(`CREATE TABLE IF NOT EXISTS links (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    code TEXT NOT NULL UNIQUE,
+    link TEXT,
+    malicious INTEGER
+)`);
 
-(() => {
-    query("CREATE TABLE IF NOT EXISTS `codes` ( `id` INT NOT NULL AUTO_INCREMENT , `code` VARCHAR(32) NOT NULL , `redirect` TEXT NOT NULL , `clicks` INT NOT NULL DEFAULT '0' , PRIMARY KEY (`id`));").catch(console.error);
-})();
+const routes = require("./routes");
 
-const generator = function () {
-    let text = "";
-    let char_list = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-    for (let i = 0; i < 5; i++) {
-        text += char_list.charAt(Math.floor(Math.random() * char_list.length));
-    }
-    return text;
-};
-
-const fix = function (s) {
-    if (!s.match(/^[a-zA-Z]+:\/\//)) {
-        s = 'http://' + s;
-    }
-    return s;
-};
-
-// why do IDEs always scream
-/**
- * @return {boolean}
- */
-function isURL(str) {
-    let pattern = new RegExp('^(https?:\\/\\/)?' + // protocol
-        '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.?)+[a-z]{2,}|' + // domain name
-        '((\\d{1,3}\\.){3}\\d{1,3}))' + // OR ip (v4) address
-        '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*' + // port and path
-        '(\\?[;&a-z\\d%_.~+=-]*)?' + // query string
-        '(\\#[-a-z\\d_]*)?$', 'i'); // fragment locator
-    return pattern.test(str);
-}
-
-const getCode = function (url) {
-    return new Promise((resolve, reject) => {
-        url = fix(url);
-        query("SELECT code FROM codes WHERE redirect=:url", {url: url}).then(rows => {
-            if (rows.length > 0) {
-                return resolve(rows[0].code);
-            } else {
-                reject("URL not found")
-            }
-        })
-    });
-};
-
-const getURL = function (code) {
-    return new Promise((resolve, reject) => {
-        query("SELECT redirect FROM codes WHERE code=:code", {
-            code: code,
-        })
-            .then(rows => {
-                if (rows.length > 0) {
-                    resolve(rows[0].redirect);
-                } else {
-                    reject("Code not found");
-                }
-            })
-    });
-};
-
-const create = function (url) {
-    return new Promise((resolve, reject) => {
-        url = fix(url);
-        getCode(url)
-            .then(c => {
-                resolve(c);
-            })
-            .catch(async e => {
-                let found = false;
-                let newCode;
-                while (!found) {
-                    newCode = generator();
-                    try {
-                        let c = await getCode(newCode);
-                    } catch (e) {
-                        found = true;
-                        query("INSERT INTO codes (redirect, code, clicks) VALUES (:url, :code, 0)", {
-                            url: url,
-                            code: newCode,
-                        });
-                        console.log("Created " + newCode + ": " + url);
-                        resolve(newCode);
-                    }
-                }
-            })
-    });
-};
-
-const updateClicks = function (code) {
-    query("SELECT clicks, id FROM codes WHERE code=:code", {
-        code: code,
-    })
-        .then(rows => {
-            if (rows.length > 0) {
-                let clicks = rows[0].clicks;
-                clicks++;
-                query("UPDATE codes SET clicks=:clicks WHERE id=:id", {
-                    id: rows[0].id,
-                    clicks: clicks,
-                });
-            }
-        })
-        .catch(console.error);
-};
-
-const getClicks = function (code) {
-    return new Promise((resolve, reject) => {
-        query("SELECT clicks FROM codes WHERE code=:code", {code: code})
-            .then(rows => {
-                if (rows.length > 0) {
-                    resolve(rows[0].clicks);
-                } else {
-                    reject("Code not found");
-                }
-            })
-
-    })
-};
-
+app.enable('trust proxy');
 app.use(require("helmet")());
 app.use(require('express-session')({resave: false, saveUninitialized: false, secret: config.sessionSecret}));
 
 app.set('view engine', 'ejs');
 
-let apiRouter = express.Router({});
-app.use("/api", apiRouter);
-let viewRouter = express.Router({});
-app.use("/view", viewRouter);
+app.use(require("morgan")("short"));
 
-app.get('/', (req, res) => {
-    res.render('index', {name: config.name, url: config.url, motto:config.motto})
+app.use(express.urlencoded({
+    extended: true,
+}));
+
+let apiRouter = express.Router({
+    strict: true,
 });
 
-app.get('/generate', (req, res) => {
-    if (req.query.url) {
-        if (isURL(req.query.url)) {
-            create(req.query.url).then(c => {
-                res.render('gen', {code: c, name: config.name, url: config.url})
-            })
-        } else {
-            res.render("error", {error: "Invalid URL", name: config.name, url: config.url});
-        }
-    } else {
-        res.render("error", {error: "Please provide an URL to shorten", name: config.name, url: config.url});
+routes.api.get(app, apiRouter);
+routes.api.generate(app, apiRouter);
+routes.api.resolve(app, apiRouter);
+routes.api.status(app, apiRouter);
+
+routes.api.error_404(app, apiRouter);
+
+let apiLimiter = new RateLimit({
+    windowMs: 60 * 1000,
+    max: 10,
+    message: {
+        success: false,
+        message: "Rate limited",
+    },
+});
+
+app.use("/api/", apiLimiter);
+app.use("/api/", apiRouter);
+
+routes.index(app);
+routes.generate(app);
+routes.api_docs(app);
+routes.report(app);
+
+app.use(express.static("static"));
+
+routes.redirect(app);
+
+routes.error_404(app);
+
+app.listen(config.port, () => console.log(`Listening to port ${config.port}`));
+
+// https://stackoverflow.com/a/14032965
+
+process.stdin.resume();//so the program will not close instantly
+
+function exitHandler(options, exitCode) {
+    console.log("Server is closing...");
+    if (exitCode || exitCode === 0) console.log(`Exit code: ${exitCode}`);
+    console.log("Closing database...");
+    try {
+        db.close();
+    } catch (e) {
+        console.error(e);
     }
-});
+    if (options.exit) process.exit();
+}
 
-app.get("/docs", (req, res) => {
-    res.render("docs",{name: config.name, url: config.url});
-});
+//do something when app is closing
+process.on('exit', exitHandler.bind(null, {exit: true}));
 
-app.get("/json/:code", function (req, res) {
-    if (!req.params.code) {
-        res.send("{}");
-        return;
-    }
-    query("SELECT * FROM codes WHERE code=:code", {
-        code: req.params.code,
-    }).then(rows => {
-        if (rows.length > 0) {
-            let data = {
-                code: req.params.code,
-                url: rows[0].redirect,
-                clicks: Number(rows[0].clicks),
-            };
-            res.send(JSON.stringify(data));
-        } else {
-            res.send("{}");
-        }
-    });
-});
+//catches ctrl+c event
+process.on('SIGINT', exitHandler.bind(null, {exit: true}));
 
-app.get("/json", function (req, res) {
-    res.send("{}")
-});
+// catches "kill pid" (for example: nodemon restart)
+process.on('SIGUSR1', exitHandler.bind(null, {exit: true}));
+process.on('SIGUSR2', exitHandler.bind(null, {exit: true}));
 
-app.use(express.static("./public"));
-
-app.get("/:id", function (req, res) {
-    getURL(req.params.id)
-        .then(url => {
-            updateClicks(req.params.id);
-            console.log(req.params.id + " -> " + url);
-            res.redirect(301, url);
-        })
-        .catch(e => {
-            res.status(404).render("error", {error: "Code not found", name: config.name, url: config.url});
-        });
-});
-
-viewRouter.get("/:id", function (req, res) { // view
-    getURL(req.params.id)
-        .then(url => {
-            getClicks(req.params.id)
-                .then(clicks => {
-                    res.render("view", {
-                        clicks: clicks,
-                        redirectUrl: url,
-                        code: req.params.id,
-                        name: config.name,
-                        url: config.url,
-                    })
-                });
-        })
-        .catch(e => {
-            res.status(404).render("error", {error: "Code not found", name: config.name, url: config.url});
-        });
-});
-
-apiRouter.get("/", function (req, res) {
-    res.render("docs", {name: config.name, url: config.url});
-});
-
-apiRouter.get("/generate", function (req, res) { // api
-    if (req.query.url) {
-        if (isURL(req.query.url)) {
-            create(req.query.url).then(c => {
-                res.send(c);
-            })
-        } else {
-            res.send("Invalid URL")
-        }
-    } else {
-        res.send("Please provide an URL");
-    }
-});
-
-apiRouter.get("/resolve", function (req, res) {
-    if (req.query.code) {
-        getURL(req.query.code)
-            .then(url => {
-                res.send(url).end();
-            })
-            .catch(e => {
-                res.send("Code not found");
-            })
-    } else {
-        res.send("Please provide a code");
-    }
-});
-
-apiRouter.get("/clicks", function (req, res) {
-    if (req.query.code) {
-        getURL(req.query.code)
-            .then(() => {
-                getClicks(req.query.code)
-                    .then(clicks => {
-                        res.send(clicks);
-                    })
-            })
-            .catch(e => {
-                res.send("Code not found");
-            })
-    } else {
-        res.send("Please provide a code");
-    }
-});
-
-app.use(function (req, res) {
-    res.status(404).render("error", {error: "Error 404 - File not found", name: config.name, url: config.url});
-});
-
-app.listen(config.port, () => console.log("Listening to " + config.port));
+//catches uncaught exceptions
+process.on('uncaughtException', exitHandler.bind(null, {exit: true}));
