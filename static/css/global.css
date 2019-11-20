@@ -2,6 +2,9 @@ body {
     background-image: url('/assets/bg.png');
     background-repeat: no-repeat;
     background-attachment: fixed;
+    background-size: cover;
+    background-position-x: center;
+    background-position-y: center;
     overflow: hidden;
     display: flex;
     min-height: 100vh;
