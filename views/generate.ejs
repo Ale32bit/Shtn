@@ -13,7 +13,8 @@
                     <h3 class="teal-text text-lighten-1 center">Link shortened!</h3>
                     <h5 class="center"><a href="#" id="short_link" class="white-text"
                                           style="text-decoration: underline; ">abcdef</a></h5>
-                    <p class="center"><a href="#" class="white-text" id="copy-btn" data-clipboard-target="#copycode">Click
+                    <p class="center"><a href="#" onclick="return copied();" class="white-text"
+                                         style="font-weight: 600;" id="copy_btn" data-clipboard-target="#copy_code">Click
                             here to copy the shortened link!</a></p>
                 </div>
             </div>
@@ -21,21 +22,31 @@
     </div>
 </div>
 
-<input id="copycode" value="abcdef" readonly style="width: 0; height: 0;">
+<input id="copy_code" value="abcdef" readonly style="width: 0; height: 0;">
 <script>
     let url = new URL(location.origin);
     url.pathname = "/<%= code %>";
-    let link = document.getElementById("short_link");
-    let code = document.getElementById("copycode");
-    link.innerText = url.href;
-    code.value = url.href;
 
-    function copy() {
-        navigator.clipboard.writeText(url.href);
+    let short_link = document.getElementById("short_link");
+    let copy_code = document.getElementById("copy_code");
+    let copy_btn = document.getElementById("copy_btn");
+    short_link.innerText = url.href;
+    short_link.href = url.href;
+    copy_code.value = url.href;
+
+    let original_copy_btn = copy_btn.innerText;
+
+    function copied() {
+        copy_btn.innerText = "Copied!"
+        setTimeout(function () {
+            copy_btn.innerText = original_copy_btn;
+        }, 1500); // 1.5 seconds
     }
+
+
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/1.7.1/clipboard.min.js"></script>
-<script>new Clipboard('#copy-btn');</script>
+<script>new Clipboard('#copy_btn');</script>
 
 <%- include("partials/footer"); %>
 
