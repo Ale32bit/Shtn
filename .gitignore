@@ -61,4 +61,5 @@ typings/
 .next
 
 # custom
-.node
+.idea
+config.json
