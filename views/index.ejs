@@ -48,9 +48,8 @@
 
     let form = document.getElementById("form_url");
 
-    form.addEventListener("submit", function (event) {
-        event.preventDefault();
-        console.log(event);
+    form.addEventListener("submit", e => {
+        e.preventDefault();
         let url;
         try {
             url = new URL(urlField.value);
@@ -73,12 +72,14 @@
         }
     });
 
-    urlField.addEventListener("change", function () {
-        try {
-            new URL(urlField.value);
-            document.getElementById("btn_submit").classList.remove("disabled");
-        } catch (e) {
-            document.getElementById("btn_submit").classList.add("disabled");
+    document.addEventListener("keypress", e => {
+        if (document.activeElement === urlField) {
+            try {
+                new URL(urlField.value);
+                document.getElementById("btn_submit").classList.remove("disabled");
+            } catch (e) {
+                document.getElementById("btn_submit").classList.add("disabled");
+            }
         }
     });
 
