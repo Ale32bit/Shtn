@@ -19,7 +19,7 @@ module.exports = function (app, router) {
                 motto: config.motto,
                 error: "Invalid token",
                 details: "We could not verify your request"
-            }).end();
+            });
         }
 
         try {
